@@ -1,0 +1,279 @@
+/* ===============================
+   PAGE
+================================ */
+.menu-page {
+  background: linear-gradient(to bottom, #f8f9fa 0%, #f6f7f8 100%);
+  padding: 24px;
+  max-width: 1200px;
+  margin: auto;
+}
+
+/* ===============================
+   TITLE
+================================ */
+.menu-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.menu-title h1 {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.menu-title span {
+  font-size: 14px;
+  color: #1a472a;
+  background: #eaf3ee;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+/* ===============================
+   INTRO
+================================ */
+.menu-intro {
+  margin-bottom: 16px;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.menu-intro h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.menu-intro p {
+  color: #777;
+  font-size: 14px;
+}
+
+/* ===============================
+   TOOLBAR
+================================ */
+.menu-toolbar {
+  position: sticky;
+  top: 70px;
+  z-index: 10;
+
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  margin-bottom: 28px;
+}
+
+/* ===============================
+   SEARCH
+================================ */
+.menu-search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.menu-search-input:focus {
+  outline: none;
+  border-color: #1a472a;
+  box-shadow: 0 0 0 3px rgba(26, 71, 42, 0.15);
+}
+
+/* ===============================
+   FILTER GROUPS
+================================ */
+.toolbar-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-group button {
+  padding: 8px 16px;
+  border-radius: 18px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.toolbar-group button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+}
+
+.toolbar-group button:active {
+  transform: scale(0.96);
+}
+
+.toolbar-group button.active {
+  background: #1a472a;
+  color: #fff;
+  border-color: #1a472a;
+}
+
+/* ===============================
+   VEG / NON-VEG
+================================ */
+.veg {
+  border-color: green;
+  color: green;
+}
+
+.nonveg {
+  border-color: red;
+  color: red;
+}
+
+.veg.active {
+  background: green;
+  color: white;
+}
+
+.nonveg.active {
+  background: red;
+  color: white;
+}
+
+/* ===============================
+   GRID
+================================ */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  padding-bottom: 40px;
+}
+
+/* ===============================
+   FOOD CARD EFFECTS
+   (MenuItem.jsx uses .food-card)
+================================ */
+.food-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.food-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 18px 35px rgba(0,0,0,0.12);
+}
+
+.food-card img {
+  transition: transform 0.35s ease;
+}
+
+.food-card:hover img {
+  transform: scale(1.06);
+}
+
+/* ===============================
+   BADGES
+================================ */
+.food-badge.veg {
+  box-shadow: 0 0 0 2px rgba(0,128,0,0.15);
+}
+
+.food-badge.nonveg {
+  box-shadow: 0 0 0 2px rgba(255,0,0,0.15);
+}
+
+/* ===============================
+   ADD BUTTON
+================================ */
+.add-btn {
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.add-btn:hover {
+  box-shadow: 0 6px 14px rgba(27,166,114,0.35);
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+}
+
+/* ADD ANIMATION */
+.added {
+  animation: pop 0.3s ease;
+}
+
+/* ===============================
+   EMPTY STATE
+================================ */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #777;
+}
+
+/* ===============================
+   ANIMATIONS
+================================ */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+  .menu-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-toolbar {
+    gap: 10px;
+  }
+
+  .toolbar-group {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .toolbar-group::-webkit-scrollbar {
+    display: none;
+  }
+}
