@@ -2,13 +2,15 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext();
 
-// ⚠️ DEMO PASSWORD (change later)
-const ADMIN_PASSWORD = "admin@123";
+// 🔐 ADMIN PASSWORD FROM ENV
+const ADMIN_PASSWORD = process.env.REACT_APP_ADMIN_PASSWORD;
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem("admin_logged_in") === "true";
   });
+
+  
 
   const [role, setRole] = useState(() => {
     return localStorage.getItem("admin_role");
@@ -19,8 +21,12 @@ export function AuthProvider({ children }) {
     localStorage.setItem("admin_role", role);
   }, [isLoggedIn, role]);
 
-  // ✅ ADMIN LOGIN WITH PASSWORD
   const loginAsAdmin = (password) => {
+    if (!ADMIN_PASSWORD) {
+      console.error("❌ Admin password not set in .env");
+      return { success: false, message: "Admin password not configured" };
+    }
+
     if (password !== ADMIN_PASSWORD) {
       return { success: false, message: "Invalid admin password" };
     }
@@ -49,6 +55,9 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
+
+  
+
 }
 
 export const useAuth = () => useContext(AuthContext);
