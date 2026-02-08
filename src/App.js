@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -16,16 +16,16 @@ import Customers from "./admin/pages/Customers";
 import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
 
-// 🔥 menu seed (menuData.js → admin & customer)
+// menu seed
 import { seedMenuOnce } from "./utils/seedMenu";
 
 function LayoutWrapper() {
   const location = useLocation();
 
-  // ❌ Hide Navbar on admin routes
+  // hide navbar on admin routes
   const isAdminRoute = location.pathname.startsWith("/admin");
 
-  // ✅ seed menu once on app load
+  // seed menu once when app loads
   useEffect(() => {
     seedMenuOnce();
   }, []);
@@ -51,6 +51,7 @@ function LayoutWrapper() {
             </AdminRoute>
           }
         />
+
         <Route
           path="/admin/menu"
           element={
@@ -59,6 +60,7 @@ function LayoutWrapper() {
             </AdminRoute>
           }
         />
+
         <Route
           path="/admin/orders"
           element={
@@ -67,6 +69,7 @@ function LayoutWrapper() {
             </AdminRoute>
           }
         />
+
         <Route
           path="/admin/customers"
           element={
@@ -75,6 +78,7 @@ function LayoutWrapper() {
             </AdminRoute>
           }
         />
+
         <Route
           path="/admin/reports"
           element={
@@ -83,6 +87,7 @@ function LayoutWrapper() {
             </AdminRoute>
           }
         />
+
         <Route
           path="/admin/settings"
           element={
@@ -98,9 +103,9 @@ function LayoutWrapper() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <LayoutWrapper />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 

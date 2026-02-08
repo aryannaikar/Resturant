@@ -56,7 +56,7 @@ function Cart() {
     message += `*Total: ₹${total.toFixed(2)}*%0A`;
 
     window.open(
-      `https://wa.me/8369488725?text=${message}`,
+      `https://wa.me/918369488725?text=${encodeURIComponent(message)}`,
       "_blank"
     );
 
