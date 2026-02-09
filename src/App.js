@@ -1,5 +1,10 @@
-import React, { useEffect } from "react";
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom";
+// import React, { useEffect } from "react";
+import {
+  HashRouter,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -17,7 +22,7 @@ import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
 
 // menu seed
-import { seedMenuOnce } from "./utils/seedMenu";
+// import { seedMenuOnce } from "./utils/seedMenu";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -26,9 +31,10 @@ function LayoutWrapper() {
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   // seed menu once when app loads
-  useEffect(() => {
-    seedMenuOnce();
-  }, []);
+
+  // useEffect(() => {
+  //   seedMenuOnce();
+  // }, []);
 
   return (
     <>

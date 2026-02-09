@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import MenuItem from "../components/MenuItem";
 import "./Menu.css";
 
@@ -8,10 +10,17 @@ function Menu() {
   const [category, setCategory] = useState("All");
   const [type, setType] = useState("All");
 
+  // 🔥 LOAD MENU FROM FIRESTORE (REAL-TIME)
   useEffect(() => {
-    const storedMenu =
-      JSON.parse(localStorage.getItem("menu_items")) || [];
-    setMenuData(storedMenu);
+    const unsub = onSnapshot(collection(db, "menu"), (snapshot) => {
+      const items = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMenuData(items);
+    });
+
+    return () => unsub();
   }, []);
 
   const filteredMenu = menuData
@@ -38,11 +47,11 @@ function Menu() {
         <h1>Menu</h1>
         <span>{filteredMenu.length} items</span>
       </div>
-      <div className="menu-intro">
-  <h2>What are you craving today? 🍽️</h2>
-  <p>Hand-picked dishes, freshly prepared</p>
-</div>
 
+      <div className="menu-intro">
+        <h2>What are you craving today? 🍽️</h2>
+        <p>Hand-picked dishes, freshly prepared</p>
+      </div>
 
       {/* STICKY TOOLBAR */}
       <div className="menu-toolbar">

@@ -1,13 +1,27 @@
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import menu from "../data/menuData";
 
-export function seedMenuOnce() {
-  const existing = localStorage.getItem("menu_items");
+// 🔥 SEED MENU TO FIRESTORE (ONLY ONCE)
+export async function seedMenuOnce() {
+  try {
+    const menuRef = collection(db, "menu");
+    const snap = await getDocs(menuRef);
 
-  if (!existing || JSON.parse(existing).length === 0) {
-    localStorage.setItem(
-      "menu_items",
-      JSON.stringify(menu)
-    );
-    console.log("✅ menu_items seeded from menuData.js");
+    // 🚫 Do not seed again if menu already exists
+    if (!snap.empty) {
+      console.log("✅ Menu already exists in Firestore");
+      return;
+    }
+
+    // ✅ Push menuData items to Firestore
+    for (const item of menu) {
+      const { id, ...menuItem } = item; // remove local id
+      await addDoc(menuRef, menuItem);
+    }
+
+    console.log("🔥 Menu successfully seeded to Firestore");
+  } catch (err) {
+    console.error("❌ Menu seeding failed", err);
   }
 }
