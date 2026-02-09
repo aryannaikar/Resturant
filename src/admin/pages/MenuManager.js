@@ -1,4 +1,13 @@
 import React, { useEffect, useState } from "react";
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import { db } from "../../firebase/firebase";
+
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
 import "../admin.css";
@@ -20,24 +29,24 @@ export default function MenuManager() {
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState(EMPTY_ITEM);
 
-  // LOAD MENU
+  // 🔥 LOAD MENU FROM FIRESTORE (REAL-TIME)
   useEffect(() => {
-    const data = JSON.parse(localStorage.getItem("menu_items")) || [];
-    setMenu(data);
+    const unsub = onSnapshot(collection(db, "menu"), (snap) => {
+      const items = snap.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setMenu(items);
+    });
+
+    return () => unsub();
   }, []);
 
-  // SAVE MENU
-  useEffect(() => {
-    localStorage.setItem("menu_items", JSON.stringify(menu));
-  }, [menu]);
-
-  // ---------- TOGGLE ----------
-  const toggleItem = (id) => {
-    setMenu(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, enabled: !item.enabled } : item
-      )
-    );
+  // ---------- TOGGLE ENABLE ----------
+  const toggleItem = async (id, current) => {
+    await updateDoc(doc(db, "menu", id), {
+      enabled: !current,
+    });
   };
 
   // ---------- EDIT ----------
@@ -54,30 +63,32 @@ export default function MenuManager() {
     setShowForm(true);
   };
 
-  const saveItem = () => {
+  const saveItem = async () => {
     if (!formData.name || !formData.price) {
       alert("Name and price are required");
       return;
     }
 
     if (editingItem) {
-      // UPDATE
-      setMenu(prev =>
-        prev.map(item =>
-          item.id === editingItem ? { ...formData } : item
-        )
-      );
+      // UPDATE EXISTING
+      await updateDoc(doc(db, "menu", editingItem), {
+        name: formData.name,
+        price: Number(formData.price),
+        category: formData.category,
+        type: formData.type,
+        image: formData.image,
+        enabled: formData.enabled,
+      });
     } else {
-      // ADD NEW
-      setMenu(prev => [
-        ...prev,
-        {
-          ...formData,
-          id: Date.now(),
-          price: Number(formData.price),
-          enabled: true,
-        },
-      ]);
+      // ADD NEW ITEM
+      await addDoc(collection(db, "menu"), {
+        name: formData.name,
+        price: Number(formData.price),
+        category: formData.category,
+        type: formData.type,
+        image: formData.image,
+        enabled: true,
+      });
     }
 
     setShowForm(false);
@@ -85,7 +96,7 @@ export default function MenuManager() {
     setEditingItem(null);
   };
 
-  const filteredMenu = menu.filter(item =>
+  const filteredMenu = menu.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -170,7 +181,7 @@ export default function MenuManager() {
           )}
 
           {/* MENU LIST */}
-          {filteredMenu.map(item => (
+          {filteredMenu.map((item) => (
             <div key={item.id} className="list-card">
               <div>
                 <strong>{item.name}</strong>
@@ -183,7 +194,7 @@ export default function MenuManager() {
                 <button onClick={() => startEdit(item)}>Edit</button>
                 <button
                   className={item.enabled ? "btn-on" : "btn-off"}
-                  onClick={() => toggleItem(item.id)}
+                  onClick={() => toggleItem(item.id, item.enabled)}
                 >
                   {item.enabled ? "Enabled" : "Disabled"}
                 </button>

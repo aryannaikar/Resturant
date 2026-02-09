@@ -1,36 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { collection, onSnapshot, updateDoc, doc } from "firebase/firestore";
+import { db } from "../../firebase/firebase";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminNavbar from "../components/AdminNavbar";
-import { getData, setData } from "../../utils/storage";
 import "../admin.css";
 
-const DEFAULT_ORDERS = [
-  { id: 1, name: "Rahul", total: 450, status: "Pending" },
-  { id: 2, name: "Ayesha", total: 300, status: "Preparing" },
-];
-
-const STATUS = [
-  "Pending",
-  "Accepted",
-  "Preparing",
-  "Ready",
-  "Delivered",
-  "Cancelled",
-];
-
 export default function Orders() {
-  const [orders, setOrders] = useState(() =>
-    getData("admin_orders", DEFAULT_ORDERS)
-  );
+  const [orders, setOrders] = useState([]);
 
+  // 🔥 LOAD ORDERS (REAL-TIME)
   useEffect(() => {
-    setData("admin_orders", orders);
-  }, [orders]);
+    const unsub = onSnapshot(collection(db, "orders"), (snap) => {
+      const list = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setOrders(list.reverse()); // latest first
+    });
 
-  const updateStatus = (id, status) => {
-    setOrders(orders.map(o =>
-      o.id === id ? { ...o, status } : o
-    ));
+    return () => unsub();
+  }, []);
+
+  const updateStatus = async (id, status) => {
+    await updateDoc(doc(db, "orders", id), { status });
   };
 
   return (
@@ -42,10 +34,26 @@ export default function Orders() {
         <div className="admin-content">
           <h2>Orders</h2>
 
+          {orders.length === 0 && <p>No orders yet</p>}
+
           {orders.map(order => (
-            <div key={order.id} className="list-card">
-              <span>{order.name}</span>
-              <span>₹{order.total}</span>
+            <div key={order.id} className="order-card">
+              <h4>
+                {order.customer.name} — ₹{order.totals.total}
+              </h4>
+
+              <p>
+                📞 {order.customer.phone} <br />
+                📍 {order.customer.address}
+              </p>
+
+              <ul>
+                {order.items.map((item, i) => (
+                  <li key={i}>
+                    {item.name} × {item.qty}
+                  </li>
+                ))}
+              </ul>
 
               <select
                 value={order.status}
@@ -53,9 +61,10 @@ export default function Orders() {
                   updateStatus(order.id, e.target.value)
                 }
               >
-                {STATUS.map(s => (
-                  <option key={s}>{s}</option>
-                ))}
+                <option>Pending</option>
+                <option>Preparing</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
               </select>
             </div>
           ))}

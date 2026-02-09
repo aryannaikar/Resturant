@@ -1,12 +1,13 @@
 import React, { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import "./Cart.css";
 
 function Cart() {
   const { cart, updateQty, removeFromCart, clearCart } =
     useContext(CartContext);
 
-  // 🆕 customer details
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -16,7 +17,8 @@ function Cart() {
   const tax = subtotal * 0.05;
   const total = subtotal + deliveryFee + tax;
 
-  const placeOrder = () => {
+  // 🔥 PLACE ORDER (REAL)
+  const placeOrder = async () => {
     if (cart.length === 0) return;
 
     if (!customerName || !phone || !address) {
@@ -24,62 +26,62 @@ function Cart() {
       return;
     }
 
-    // ================= REAL ORDER OBJECT =================
-    const newOrder = {
-      id: Date.now(),
-      customerName,
-      phone,
-      address,
-      items: cart.map(item => ({
-        id: item.id,
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-      })),
-      subtotal,
-      deliveryFee,
-      tax,
-      total,
-      status: "Pending",
-      paymentType: "WhatsApp",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      // ✅ SAVE ORDER TO FIRESTORE
+      await addDoc(collection(db, "orders"), {
+        customer: {
+          name: customerName,
+          phone,
+          address,
+        },
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+        })),
+        totals: {
+          subtotal,
+          delivery: deliveryFee,
+          tax,
+          total,
+        },
+        status: "Pending",
+        createdAt: serverTimestamp(),
+      });
 
-    // ================= SAVE TO LOCAL STORAGE =================
-    const existingOrders =
-      JSON.parse(localStorage.getItem("orders")) || [];
+      // 📲 WHATSAPP MESSAGE (OPTIONAL)
+      let message = `🧾 *New Order*%0A%0A`;
+      message += `👤 *Customer:* ${customerName}%0A`;
+      message += `📞 *Phone:* ${phone}%0A`;
+      message += `📍 *Address:* ${address}%0A%0A`;
 
-    localStorage.setItem(
-      "orders",
-      JSON.stringify([...existingOrders, newOrder])
-    );
+      cart.forEach(item => {
+        message += `• ${item.name} x ${item.qty} = ₹${item.price * item.qty}%0A`;
+      });
 
-    // ================= WHATSAPP MESSAGE =================
-    let message = `🧾 *New Order – Artisan Kitchen*%0A%0A`;
+      message += `%0A----------------------%0A`;
+      message += `Subtotal: ₹${subtotal.toFixed(2)}%0A`;
+      message += `Delivery: ₹${deliveryFee.toFixed(2)}%0A`;
+      message += `Tax (5%): ₹${tax.toFixed(2)}%0A`;
+      message += `*Total: ₹${total.toFixed(2)}*`;
 
-    message += `👤 *Customer:* ${customerName}%0A`;
-    message += `📞 *Phone:* ${phone}%0A`;
-    message += `📍 *Address:* ${address}%0A%0A`;
+      window.open(
+        `https://wa.me/918369488725?text=${encodeURIComponent(message)}`,
+        "_blank"
+      );
 
-    cart.forEach(item => {
-      message += `• ${item.name} x ${item.qty} = ₹${item.price * item.qty}%0A`;
-    });
+      // 🧹 CLEAR CART
+      clearCart();
+      setCustomerName("");
+      setPhone("");
+      setAddress("");
 
-    message += `%0A----------------------%0A`;
-    message += `Subtotal: ₹${subtotal.toFixed(2)}%0A`;
-    message += `Delivery: ₹${deliveryFee.toFixed(2)}%0A`;
-    message += `Tax (5%): ₹${tax.toFixed(2)}%0A`;
-    message += `*Total: ₹${total.toFixed(2)}*`;
-
-    window.open(
-      `https://wa.me/918369488725?text=${encodeURIComponent(message)}`,
-      "_blank"
-    );
-
-    clearCart();
-    setCustomerName("");
-    setPhone("");
-    setAddress("");
+      alert("✅ Order placed successfully");
+    } catch (err) {
+      console.error("Order failed", err);
+      alert("❌ Failed to place order");
+    }
   };
 
   if (cart.length === 0) {
@@ -111,13 +113,9 @@ function Cart() {
               <p>₹{item.price}</p>
 
               <div className="qty-control">
-                <button onClick={() => updateQty(item.id, item.qty - 1)}>
-                  −
-                </button>
+                <button onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
                 <span>{item.qty}</span>
-                <button onClick={() => updateQty(item.id, item.qty + 1)}>
-                  +
-                </button>
+                <button onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
               </div>
             </div>
 
@@ -138,13 +136,11 @@ function Cart() {
       <div className="cart-summary">
         <h3>Order Summary</h3>
 
-        {/* 🆕 CUSTOMER DETAILS */}
         <input
           type="text"
           placeholder="Your Name"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
-          style={{ width: "100%", marginBottom: 8, padding: 8 }}
         />
 
         <input
@@ -152,7 +148,6 @@ function Cart() {
           placeholder="Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          style={{ width: "100%", marginBottom: 8, padding: 8 }}
         />
 
         <textarea
@@ -160,7 +155,6 @@ function Cart() {
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           rows={3}
-          style={{ width: "100%", marginBottom: 12, padding: 8 }}
         />
 
         <div className="summary-row">
